@@ -16,7 +16,9 @@
 
 	<div class="cont">
         <div class="banner"></div>
-        <div class="tab" click = "opera.exitRoom()">游戏大厅</div>
+        <div class="tab" onclick = "opera.exitRoom()">游戏大厅</div>
+        <div class="notice"><marquee  loop="-1" onMouseOut="this.start()" onMouseOver="this.stop()" id="inform">决战到天亮 </marquee></div>
+        <div class="music" onclick= "opera.pauseBackground()"></div>
         <div class="index house">
 <!--             <div class="room">
                 <div class="room-photo"></div>
@@ -41,6 +43,7 @@
                     </div>
                 </div>
              </div>
+             <div class="message"></div>
              <div class="left-person person">
                  <div class="left-icon detail-div" id="role-3">
                      <div class="icon-detail"><img src="/resource/images/man.png" alt=""></div>
@@ -63,9 +66,9 @@
              <div class="poker-show">
                  
                  <div class="poker-detail poker-detail-show">
-                     <img src="/resource/poker/clubs3.jpg" alt="">
+                     <!-- <img src="/resource/poker/clubs3.jpg" alt="">
                      <img src="/resource/poker/clubs4.jpg" alt="">
-                     <img src="/resource/poker/clubs5.jpg" alt="">
+                     <img src="/resource/poker/clubs5.jpg" alt=""> -->
 
                  </div>
              </div>
@@ -102,6 +105,8 @@
         </div>
         
     </div>
+    <video src="" id="background" autoplay="autoplay" loop="loop" style="visibility: hidden; "></video>
+    <video src="" id="video" autoplay="autoplay"  style="visibility: hidden; "></video>
 </body>
 <script src="resource/js/public.js"></script>
 <script>
@@ -110,24 +115,26 @@
     num = (dom.children.length-1)*14+40;
     dom.style.marginLeft =(31-num/2)+'px';
     pullCard = function(){
-        console.log($(this)[0].style.marginTop);
         if($(this)[0].style.marginTop=='-10px'){
             $(this).css('margin-top',"0px");
         }else{
             $(this).css('margin-top',"-10px");
         }
+
+        opera.playVideo("提示");
     }
-    // console.log(pokerdata);
     var ws = null;
     var role = ['role1',"role2","role3"]
     var currName;
     var currNum;//我的id
     var myCard;//我的牌
-    var endcard=[];//底牌
+    var endCard=[];//底牌
     var landed = "地主";
     var farmar = "农民";
+    var pokerback = "/resource/images/blue.png";
     var landImg = "/resource/images/lander.png"
     var farmarImg = "/resource/images/man.png"
+    let isResource = false;//判断background是否有资源
     currName = prompt('请输入用户名', 'user'+Math.floor(Math.random() * 100000));
     if ('WebSocket' in window) {
         ws = new WebSocket("ws://127.0.0.1:9501/");
@@ -168,9 +175,34 @@
      
                         })
                     }
-                    console.log(msg.name+"上线了");
+                    opera.sendNotice(msg.name);
+                    opera.showMessage(msg.message)
                     break;
             case "loginout":break;
+            case "win":
+
+                    opera.resetBack();
+                    $("#background").attr("src","");
+                    isResource = false;
+                    // playMusic(msg.currgroup)
+                    opera.resetBtn(msg.operation);
+                    if(msg.lander == msg.start){
+                        if(msg.lander == currNum){
+                            opera.playVideo("win");
+                        }else{
+                            opera.playVideo("lose");
+                        }
+                        // alert("lander赢了");
+                    }else{
+                        if(msg.lander == currNum){
+                            opera.playVideo("lose");
+                        }else{
+                            opera.playVideo("win");
+                        }
+                        // alert('farmer赢了')
+                    }
+
+                    break;
             case "enter":
                 if(msg.name == currName){
                     opera.resetBtn(msg.operation);
@@ -178,21 +210,52 @@
                     $('.house').hide();
                     $('.detail').show();
                 }
+                opera.showMessage(msg.message)
+                opera.playVideo("enter");
                 break;
             case "exit":break;
+            case "giveup":
+                    
+                    $('.me-play').html("");
+                    if(msg.currgroup.start == currNum ){
+                        opera.resetBtn(msg.operation);
+                    }
+                    var arr = ['pass1',"pass2","pass3","pass4"];
+                    var index = Math.floor(Math.random()*4);
+                    opera.playVideo(arr[index]);
+                    break;
+            case "play":
+                    //判断牌型是否正确
+                    if(msg.status){
+                        $('.me-play').html("");
+                        opera.setCard(msg.currgroup.card[0],msg.currgroup.lander);
+                        var endCard =opera.getCard(msg.currgroup.card[1]);
+                        var img = $(".hander-img");
+                        endCard.forEach(function(item,index){
+                            var url = "/resource/poker/"+item.type+item.value+".jpg";
+                            img[index].children[0].src=url;
+                        })
+                        if(msg.currgroup.start == currNum){
+                            opera.resetBtn(msg.operation);
+                        }
+                        opera.showCard($('.poker-detail-show')[0],msg.currgroup.prep.data.sort(function(x,y){ return x.level > y.level?1:-1}));
+
+                        opera.playMusic(msg.currgroup);    
+                    }
+                    break;
             case "ready":
+
                 if(msg.name == currName){
                     opera.resetBtn(msg.operation);
                 }
                 break;
             case "putcard":
                     var card = msg.card[0];
-                    var endcard = msg.card[1];
+                    var endCard = msg.card[1];
                     $('.me-play').html("");
                     card.forEach(function(item,index){
                         if(item.name == currName){
                             if(index == msg.currgroup.start){
-                                console.log(index);
                                 opera.resetBtn(msg.operation,[index]);
                             }
                             currNum = index;
@@ -200,6 +263,7 @@
 
                         }
                     })
+                    opera.playbackground('background');
                     opera.setCard(card);
                     break;
             case "start":
@@ -214,13 +278,16 @@
                 if(msg.currgroup.lander == currNum){
                     opera.resetBtn(msg.operation);
                 }
+                if(msg.nocall != 2 ){
+                    opera.playVideo("qiang1");
+                }
                 break;
             case "end":break;
             case "call":
-                console.log(msg);
+                var arr = ["叫地主","qiang1",'pass4'];
+                opera.playVideo(arr[msg['opera']]);
                 $('.me-play').html("");
                 if(msg.name = currName){
-                    console.log(msg.currgroup.start);
                     msg.currgroup.card[0].forEach(function(item,index){
                         if(index == msg.currgroup.start && item.name == currName){
                             opera.resetBtn(msg.operation,[index]);
@@ -230,15 +297,23 @@
                 break;
             case "error":
 
-                if(msg.name == currName){
-                    alert(msg.message)
+                if(msg.name == currName && msg.group == currgroup){
+                    opera.showMessage(msg.message)
                 }
+                break;
+            case "gameover":
+                    opera.resetBack();
+                    $("#background").attr("src","");
+                    isResource = false;
+                    opera.resetBtn(msg.operation);
+                    // opera.playVideo("lose");
+                    opera.showMessage(msg.message);
+
                 break;
         }
 
 	}
 	ws.onclose  = function(data){
-        console.log(data);
         console.log("已断开连接");
     }
     ws.onerror = function() {
@@ -276,17 +351,32 @@
             data.group = index;
             ws.send(JSON.stringify(data));
         },
+        sendNotice:function(str){
+            // $('#inform').html(str);
+        },
         exitRoom: function(){
             $(".house").show();
-            $(".detail").hide();
+            $(".detail").hide();  
+            opera.resetBack();         
+            data = {};
+            data.type = "exit";
+            data.name = currName;
+            data.group = currGroup;
+            ws.send(JSON.stringify(data));
+            opera.playVideo("提示");
+        },
+        giveup: function(){                   
+            data = {};
+            data.type = "giveup";
+            data.name = currName;
+            data.group = currGroup;
+            ws.send(JSON.stringify(data));
         },
         resetBtn: function(data,arr=[]){
-            console.log(arr);
             var dom = $('.me-play');
             dom.html("");
-            console.log(data);
             data.forEach(function(item){
-                var btn = "<button onclick='opera."+operation[item].func+"(";
+                var btn = "<span class='opera_btn' onclick='opera."+operation[item].func+"(";
                 for(var i=0;i<arr.length;i++){
                     btn += "\""+arr[i]+"\"";
                     if(i+1<arr.length){
@@ -297,7 +387,7 @@
                 {
                     btn += ",\""+operation[item].value+"\"";
                 }
-                btn += ")'>"+operation[item].name+"</button>";
+                btn += ")'>"+operation[item].name+"</span>";
                 dom.append(btn);
             })
         },
@@ -305,16 +395,25 @@
             data.type = "ready";
             data.name = currName;  
             data.group = currGroup;  
-            ws.send(JSON.stringify(data));
+            ws.send(JSON.stringify(data));            
+            opera.playVideo("提示");
         },
         callLand:function(index,opr){
             data.type="call";
             data.name = currName;
             data.group = currGroup;
             data.value = index;
-            data.opera = opr;  
-            console.log(data);          
+            data.opera = opr;         
             ws.send(JSON.stringify(data));
+
+        },
+        showCard(dom,data){
+            $(dom).html("");
+            data.forEach(function(item,index){
+                 var val = item.index||"";
+                 var img = '<img src="/resource/poker/'+item.type+item.value+'.jpg" data-type="'+item.type+'" data-value="'+item.value+'" data-level="'+item.level+'" data-index="'+val+'" alt="">';
+                 $(dom).append(img);
+            })
 
         },
         setCard:function(card,lander="-1"){            
@@ -332,11 +431,11 @@
                     $('#role-'+(i+1)).children()[1].innerHTML = landed;
                 }
                 if(i==0){
-
-                    myCard.sort(check.sort).forEach(function(item,index){
-                        var img = '<img src="/resource/poker/'+item.type+item.value+'.jpg" data-type="'+item.type+'" data-value="'+item.value+'" data-level="'+item.level+'" data-index="'+item.index+'" alt="">';
-                        dom.append(img);
-                    })
+                    opera.showCard(dom[0],myCard.sort(check.sort));
+                    // myCard.sort(check.sort).forEach(function(item,index){
+                    //     var img = '<img src="/resource/poker/'+item.type+item.value+'.jpg" data-type="'+item.type+'" data-value="'+item.value+'" data-level="'+item.level+'" data-index="'+item.index+'" alt="">';
+                    //     dom.append(img);
+                    // })
 
                 }else{
                     dom.append(card[index].card.length);
@@ -348,6 +447,28 @@
             $('.me-poker>img').click(pullCard);
         },
 
+        resetBack:function (){
+            var img = $(".hander-img");
+            role.forEach(function(item,index){
+                //清空玩家牌的数量展示
+                var dom = $("#"+item);
+                dom.html("");
+                //身份清空
+                $('#role-'+(index+1)).children()[0].children[0].src=farmarImg;
+                $('#role-'+(index+1)).children()[1].innerHTML = farmar;
+                //底牌清空
+                img[index].children[0].src = pokerback ;
+            })
+            //当前个人牌清空
+            $('.me-play').html("");
+            //出牌展示清空
+            $('.poker-detail').html("");
+            //清空音樂
+            $("#video").attr("src","");
+
+
+                
+        },
         putPoker:function (){
             var list = [];
             var arr = [];//出牌id
@@ -362,6 +483,10 @@
                     
                 }
             })
+            if(!list.length){
+                opera.showMessage("请选择你要出的牌");
+                return;
+            }
             var data = check.type(list);
             data.list = arr;
             var msg = {};
@@ -370,7 +495,84 @@
             msg.data = data;
             msg.group = currGroup;
             ws.send(JSON.stringify(msg));
+
+            opera.playVideo("走牌");
+    },
+    playVideo(src){
+        var dom = $("#video");
+        var url = "/resource/music/"+src+".mp3";
+        dom.attr('src',url);
+    },
+    playbackground(src){
+        var dom = $("#background");
+        var url = "/resource/music/"+src+".mp3";
+        isResource = true;
+        dom.attr('src',url);
+    },
+    pauseBackground(){
+        var dom = $("#background")[0];
+        if(!isResource){
+            return; 
+        }        
+        if(dom.paused){
+            $(".music").removeClass("closeMusic")
+            dom.play();
+        }else{
+            $(".music").addClass("closeMusic")
+            dom.pause();
+
+        }  
+    },
+    showMessage(val){
+        var dom = $('.message');
+        dom.html(val);
+        setTimeout(function(){dom.html("")},2000);
+    },
+    playMusic(group){
+        var val = "";
+        var key = group.prep.data[0].value;
+        switch(group.prep.type){
+            case "one":
+                val = key;
+                break;
+            case "two":
+                val = "对"+key;
+                break;
+            case "twomore":
+                val = "连对";
+                break;
+            case "three":
+                if(data.other){
+                    val = "三带一";
+                }else{                    
+                    val = "三个"+key;
+                }
+                break;
+            case "threemore":
+                val = "飞机";
+                break;
+            case "fourmore":
+                val = "四带二";
+                break;
+            case "list":
+                val = "顺子";
+                break;
+            case "four":
+                val = "炸弹";
+                break;
+            case "kingtwo":
+                val = "王炸";
+                break;
+        }
+
+        var index = Math.floor(Math.random()*3);
+        var crush = ['crush','crush1','crush2'];
+        if(group.time != 0){
+            val = crush[index];
+        }
+        opera.playVideo(val);
     }
+
 
 
 

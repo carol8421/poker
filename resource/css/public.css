@@ -17,6 +17,36 @@ body{
     background-size:cover;
 
 }
+.notice{
+    position: absolute;
+    font-size: 14px;
+    font-weight: 700;
+    width: 70%;
+    display: inline;
+    height: 20px;
+    padding-left:25px;
+    line-height: 20px;
+    color: red;
+    padding-left:15px;
+    background:#f9cc9d;
+}
+.notice:before {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    content: "";
+    background: url(/resource/images/novice.png);
+    background-size: 100% 100%;
+    z-index: 20;
+    top:5px;
+    left:0px;
+}
+.message{
+    width: 100%;
+    text-align: center;
+    color: red;
+    position:absolute
+}
 .banner{
     background: url(../images/banner.png);
     background-size: 100% 100%;
@@ -32,9 +62,30 @@ body{
     height:20px;
     line-height: 20px;
 }
+.closeMusic:before {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    content: "";
+    background: black;
+    transform: rotate(-30deg);
+    left: 10px;
+}
+.music{
+    position: absolute;
+    right: 10px;
+    top: 100px;
+    width: 20px;
+    height: 20px;
+    content: "";
+    background: url(/resource/images/novice.png);
+    background-size: 100% 100%;
+    cursor:pointer;
+}
 .index{
     /*padding:20px;*/
     width:100%;
+    max-height:430px;
     min-height:430px;
     overflow-y: scroll;
     position: relative;
@@ -57,6 +108,19 @@ body{
     font-size: 18px;
     font-weight: 700;
     text-align: center;
+    background-image: url("../images/indexback.png");
+    background-size: cover;
+    cursor: pointer;
+}
+.opera_btn{    
+    background-image: url(../images/btnback.png);
+    background-size: 100% 100%;
+    width: 15%;
+    height: 30px;
+    line-height: 30px;
+    margin: auto;
+    cursor: pointer;
+    display: inline-block;
 }
 .detail{
     overflow:hidden;
@@ -162,7 +226,7 @@ body{
     min-width: 40px;
     height:100px;
     position: absolute;
-    left:50%;
+    left:45%;
     margin:auto auto;
 
 }
@@ -175,13 +239,13 @@ body{
 }    
 .me-play{
     position: absolute;
-    bottom:100px;
-    left:50%;
-    margin-left: -150px;
-    width:300px;
-    height:20px;
-    /*border:1px solid red;*/
+    bottom: 100px;
+    width: 100%;
+    height: 30px;
+    /* border: 1px solid red; */
     text-align: center;
+    display: table-cell;
+    vertical-align: middle;
 }
 .me-detail{
     margin-left:10px;

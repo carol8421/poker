@@ -12,7 +12,7 @@ var pokerdata =   [
     {"type" : "heart", "value" : "Q",  "level" : 10 },
     {"type" : "heart", "value" : "K",  "level" : 11 },
     {"type" : "heart", "value" : "A",  "level" : 12 },
-    {"type" : "heart", "value" : "2",  "level" : 13 },
+    {"type" : "heart", "value" : "2",  "level" : 15 },
     {"type" : "spade", "value" : "3",  "level" : 1  },
     {"type" : "spade", "value" : "4",  "level" : 2  },
     {"type" : "spade", "value" : "5",  "level" : 3  },
@@ -81,8 +81,8 @@ var operation = [
         {"name":"不叫","func":"callLand","value":2},
         {"name":"准备","func":"goReady"},
         {"name":"取消","func":"goReady"},
-        {"name":"退出房间","func":"empty"},
-        {"name":"不要","func":"empty"},
+        {"name":"退出","func":"exitRoom"},
+        {"name":"不要","func":"giveup"},
         {"name":"出牌","func":"putPoker"},
         {"name":"提示","func":"empty"}
 ];
