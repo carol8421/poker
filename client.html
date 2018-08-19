@@ -105,7 +105,7 @@
         </div>
         
     </div>
-    <video src="" id="background" autoplay="autoplay" loop="loop" style="visibility: hidden; "></video>
+    <video src="/resource/music/background.mp3" id="background" autoplay="autoplay" loop="loop" style="visibility: hidden; "></video>
     <video src="" id="video" autoplay="autoplay"  style="visibility: hidden; "></video>
 </body>
 <script src="resource/js/public.js"></script>
@@ -114,6 +114,7 @@
     dom = document.getElementsByClassName('poker-detail-show')[0];
     num = (dom.children.length-1)*14+40;
     dom.style.marginLeft =(31-num/2)+'px';
+    $('#background')[0].pause()
     pullCard = function(){
         if($(this)[0].style.marginTop=='-10px'){
             $(this).css('margin-top',"0px");
@@ -134,10 +135,11 @@
     var pokerback = "/resource/images/blue.png";
     var landImg = "/resource/images/lander.png"
     var farmarImg = "/resource/images/man.png"
+    let isMusic = true;//判断当前背景音乐是否播放
     let isResource = false;//判断background是否有资源
     currName = prompt('请输入用户名', 'user'+Math.floor(Math.random() * 100000));
     if ('WebSocket' in window) {
-        ws = new WebSocket("ws://127.0.0.1:9501/");
+        ws = new WebSocket("ws://127.0.0.1:10000/");
     } else {
         alert('当前浏览器不支持websocket')
     }
@@ -181,8 +183,8 @@
             case "loginout":break;
             case "win":
 
-                    opera.resetBack();
-                    $("#background").attr("src","");
+                    opera.resetBack();                    
+                    $("#background")[0].pause();
                     isResource = false;
                     // playMusic(msg.currgroup)
                     opera.resetBtn(msg.operation);
@@ -263,7 +265,10 @@
 
                         }
                     })
-                    opera.playbackground('background');
+                    if(isMusic){
+                        $('#background')[0].play();
+                    }
+                    //opera.playbackground('background');
                     opera.setCard(card);
                     break;
             case "start":
@@ -505,19 +510,18 @@
     },
     playbackground(src){
         var dom = $("#background");
-        var url = "/resource/music/"+src+".mp3";
+        var url = "/resource/music/background.mp3";
         isResource = true;
         dom.attr('src',url);
     },
     pauseBackground(){
-        var dom = $("#background")[0];
-        if(!isResource){
-            return; 
-        }        
+        var dom = $("#background")[0];  
         if(dom.paused){
+            isMusic = true;
             $(".music").removeClass("closeMusic")
             dom.play();
         }else{
+            isMusic = false;
             $(".music").addClass("closeMusic")
             dom.pause();
 

@@ -61,7 +61,7 @@ return [
             "two" => ["level" => 0],//对    
             "twomore" => ["level" => 0],//连对
             "three" => ["level" => 0],//三带一
-            "threetmore" => ["level" => 0],//飞机
+            "threemore" => ["level" => 0],//飞机
             "fourmore" => ["level" => 0],//四带二，1，2
             "list" => ["level" => 0],//顺子
             "four" => ["level" => 1],//炸弹
@@ -70,4 +70,5 @@ return [
     ];
 
 
- ?>
+ ?>,
+        

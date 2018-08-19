@@ -1,5 +1,6 @@
+
 <?php
-define('cfg', include_once('config.php'));
+define('CFG', include_once('config.php'));
 include_once('./json.php');
 
 class Poker {
@@ -8,12 +9,12 @@ class Poker {
     public $numpoker;
     public $rule;
     public $userlist = [];
-    public $group = [['user'=>[]],['user'=>[]],['user'=>[]]];
+    public $group = [['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]]];
     public function __construct() {
-        $this->server = new swoole_websocket_server('0.0.0.0', 9501);
-        $this->cfg = include_once('config.php');
-        $this->numpoker = $this->cfg['card'];
-        $this->rule = $this->cfg['rule'];
+        $this->server = new swoole_websocket_server('0.0.0.0', 10000);
+        $this->cfg = CFG;
+        $this->numpoker = CFG['card'];
+        $this->rule = CFG['rule'];
         $this->server->on('open', function (swoole_websocket_server $server, $request) {
                 $this->onOpen($server, $request);
             });
@@ -55,12 +56,12 @@ class Poker {
    */
     public function onMessage($server, $frame){
         //type::login,message,loginout,call,enter
-        $data = json_decode($frame->data);
+        $data = json_decode($frame->data,true);
         //回复消息的数组message
         $m = [];
-        var_dump($data);
         $m['name'] = $data['name'];
         $m['type'] = $data['type'];
+        $m['group'] = isset($data['group'])?$data['group']:"";
         $id = $this->getId($data['name']);
         switch($data['type']){
             case 'login':
@@ -74,6 +75,7 @@ class Poker {
                                 }else{
                                     $v['login'] = true;
                                     $v['id'] = $frame->fd;
+                                    $m['message'] = $data['name']."上线了";
                                 }
                             }
                         }
@@ -81,6 +83,7 @@ class Poker {
                         $user = [];
                         $fd = $frame->fd;
                         $user['login'] = true;
+                        $m['message'] = $data['name']."上线了";
                         $user['name'] = $data['name'];
                         $user['ready'] = false;
                         $this->userlist[$fd] = $user;
@@ -91,26 +94,81 @@ class Poker {
             case 'play':
                 $card = $data['data'];
                 //判断牌型是否正确
-                $thegroup = &$this->group[$data['group']];
-                var_dump($card['list']);
-                var_dump($card['data']);
-                var_dump($this->isTrueCard($card['data']));
+                $currgroup = &$this->group[$data['group']];
                 if($iscard = $this->isTrueCard($card['data'])){
-                    if($thegroup['prep']){
-                        if($this->dataHandle($thegroup['prep'],$iscard)){
-                            $this->delCard($frame->fd,$card['list']);
-                            $thegroup['prep'] = $iscard['data'];
+                    if(isset($currgroup['prep']) && $currgroup['prep'] != ""){
+                        if($this->dataHandle($this->rule,$currgroup['prep'],$iscard)){
+                            $this->delCard($frame->fd,$card['list'],$data['group']);
+                            //牌出完了
+                            if(count($this->userlist[$frame->fd]['card'])==0){
+                                $m['type'] = "win";
+                                $m['operation'] = [3,5];
+                                $m['start'] = $currgroup['start'];
+                                $m['currgroup'] = $currgroup;
+                                $m["lander"] = $currgroup['lander'];
+                                $this->resetGroup($data['group']);
+                                $currgroup['operation'] = [3,5];
+                                foreach ($currgroup['user'] as $v) {
+                                    $this->userlist[$v]['ready'] = false;
+                                }
+                                
+                                break;
+                            }
+                            $currgroup['prep'] = $iscard;
+                            //确定出牌人，进行轮换
+                            if($currgroup['start']==2){
+                                $currgroup['start']=0;
+                            }else{
+                                $currgroup['start']++;
+                            }
 
+                            $currgroup['time']++;
+                            $currgroup['call']=0;
                             $user = [];
-                            array_push($user,$this->userlist[$thegroup[0]]);
-                            array_push($user,$this->userlist[$thegroup[1]]);
-                            array_push($user,$this->userlist[$thegroup[2]]);
+                            array_push($user,$this->userlist[$currgroup['user'][0]]);
+                            array_push($user,$this->userlist[$currgroup['user'][1]]);
+                            array_push($user,$this->userlist[$currgroup['user'][2]]);
                             $m['msg'] = '牌型正确';
-                            $m['groupval'] = $thegroup;
+                            $m['status'] = '1001';
+                            $m['currgroup'] = $currgroup;
+                            $m['operation'] = [6,7,8];
+                            var_dump($m);
+
                             break;
                         }
                     }else{
-                        $thegroup['prep'] = $iscard['data'];
+                        //确定出牌人，进行轮换
+                        
+                        $this->delCard($frame->fd,$card['list'],$data['group']);
+                        if(count($this->userlist[$frame->fd]['card'])==0){
+                            $m['type'] = "win";
+                            $m['operation'] = [3,5];
+                            $m['start'] = $currgroup['start'];
+                            $m['currgroup'] = $currgroup;
+                            $m["lander"] = $currgroup['lander'];
+                            $this->resetGroup($data['group']);
+                            $currgroup['operation'] = [3,5];
+                            foreach ($currgroup['user'] as $v) {
+                                $this->userlist[$v]['ready'] = false;
+                            }
+                            break;
+                        }
+                        if($currgroup['start']==2){
+                            $currgroup['start']=0;
+                        }else{
+                            $currgroup['start']++;
+                        }
+                        $currgroup['call']=0;
+                        $currgroup['time'] = 0;
+                        $user = [];                        
+                        $currgroup['prep'] = $iscard;
+                        array_push($user,$this->userlist[$currgroup['user'][0]]);
+                        array_push($user,$this->userlist[$currgroup['user'][1]]);
+                        array_push($user,$this->userlist[$currgroup['user'][2]]);
+                        $m['msg'] = '牌型正确';
+                        $m['status'] = '1001';
+                        $m['currgroup'] = $currgroup;
+                        $m['operation'] = [6,7,8];
                         break;
                     }
                 }
@@ -126,16 +184,24 @@ class Poker {
                             $m['type'] = 'error';
                         }
                     }
-                    $currGroup = $this->group[$data['group']]['user'];
-                    if(count($currGroup) < 3){
+                    $currgroup = $this->group[$data['group']]['user'];
+                    $this->userlist[$frame->fd]['group'] = $data['group'];
+                    var_dump($this->group);
+                    var_dump($currgroup);
+                    if(count($currgroup) < 3){
                         array_push($this->group[$data['group']]['user'],$frame->fd);
-                        $m['group'] = $data['group']; 
+                        $m['group'] = $data['group']; $m['message'] = $data['name']."进入房间";
                     }else{
                         $m['message'] = '该房间已经满员,请重新选择房间';
                         $m['type'] = 'error';
                     }
                     break;
-            case 'exit':break;
+            case 'exit':
+                $currgroup = &$this->group[$data['group']]['user'];
+                $offset = array_search($frame->fd,$currgroup);
+                array_splice($currgroup,$offset,1);
+                $m['message'] = $data['name']."退出房間成功";
+                break;
             case 'ready':
                     //
                     $this->userlist[$id]['ready'] = !$this->userlist[$id]['ready'];
@@ -162,48 +228,81 @@ class Poker {
                         //初始化当前牌局
                         $this->group[$groupId]['card'] = $m['card'];
                         $this->group[$groupId]['start'] = rand(0,2);
-                        echo $this->group[$groupId]['start'];
-                        echo '我是随机数';
                         $this->group[$groupId]['lander'] = $this->group[$groupId]['start'];
 
                         $this->group[$groupId]['call'] = 0;
+                        $this->group[$groupId]['nocall'] = 0;
                         $m['currgroup'] = $this->group[$groupId];
                     }
 
                     break;
             case 'start':break;
             case 'end':break;
+            case "giveup":
+                    //确定出牌人，进行轮换
+                    $currgroup = &$this->group[$data['group']];
+
+                    echo "我是".$currgroup['start']."个".$currgroup['start'];
+                    if($currgroup['start']==2){
+                        $currgroup['start']=0;
+                    }else{
+                        $currgroup['start']++;
+                    }
+                    $currgroup['call']++;
+                    if($currgroup['call'] == 2 ){
+                        $currgroup['prep']="";
+                        $m['operation'] = [7,8];
+                    }else{
+                        $m['operation'] = [6,7,8];
+                    }
+                    $m['currgroup'] = $currgroup;
+
+                    break;
             case 'call':
-                $currGroup = &$this->group[$data['group']];
-                $currGroup['call']++;
-                print_r($currGroup);
+
+                $currgroup = &$this->group[$data['group']];
+
+                var_dump($currgroup);
+                $currgroup['call']++;
+
+                print_r($currgroup);
                 
                 if($data['opera']!=2){
-                     $currGroup['lander'] = $data['value'];
+                    $currgroup['lander'] = $data['value'];
+                }else{
+                    $currgroup['nocall']++;
                 }
-                if($currGroup['call'] <= 3){
+                if($currgroup['call'] <= 3 && $currgroup['nocall'] <2 ){
                     //判断是否为不叫
 
                     $m['operation'] = [1,2];
-                    if($currGroup['start']==2){
-                        $currGroup['start']=0;
+                    if($currgroup['start']==2){
+                        $currgroup['start']=0;
                     }else{
-                        $currGroup['start']++;
+                        $currgroup['start']++;
                     }
                 }else{
+                    
+                    $currgroup['start'] = $currgroup['lander'];
                     //三轮地主抢完，确认地主人选
                     $m['type'] = 'start';
+                    $m['nocall'] = $currgroup['nocall'];
                     //出牌和提示
                     $m['operation'] = [7,8];
-                    $this->group[$data['group']]['card'][0][$currGroup['lander']]['card'] = array_merge($currGroup['card'][0][$currGroup['lander']]['card'],$currGroup['card'][1]);
+                    $arr = array_merge($currgroup['card'][0][$currgroup['lander']]['card'],$currgroup['card'][1]);
+                    if($this->group[$data['group']]['user'][$currgroup['lander']] == $frame->fd){
+                        $this->userlist[$frame->fd]['card'] = $arr;
+                    }
+                    $this->group[$data['group']]['card'][0][$currgroup['lander']]['card'] = $arr;
+                    
                 }
-
+                $m['opera'] = $data['opera'];
                 $m['currgroup'] = $this->group[$data['group']];
                 break;
 
         }
-        print_r($m);
-        $this->sendMessage($m);
+        $groupid = isset($data['group'])?$data['group']:false;
+        $this->sendMessage($m,$groupid);
     }
     public function onOpen($server, $request){
     //  $user = [];
@@ -219,21 +318,49 @@ class Poker {
         // 接收http请求从get获取message参数的值，给用户推送
         // $this->server->connections 遍历所有websocket连接用户的fd，给所有用户推送
         foreach ($this->server->connections as $fd) {
-            var_dump($fd);
             $this->server->push($fd, $request->get['message']);
         }
     }
     public function onClose($server,$fd){
-        var_dump($server);
-        var_dump($fd);
-        echo 'client {$fd} closed\n';
+        if(!isset($this->userlist[$fd]['group'])){
+            return;
+        }
+        $group = $this->userlist[$fd]['group'];
+        echo $group;
+        $currgroup = &$this->group[$group];
+        $offset = array_search($fd,$currgroup['user']);
+        array_splice($currgroup['user'],$offset,1);
+
+
+        $m['type'] = "gameover";
+        $m['message'] = $this->userlist[$fd]['name']."退出了房间";
+        $m['operation'] = [3,5];
+        $this->resetGroup($group);
+        $currgroup['operation'] = [3,5];
+        foreach ($currgroup['user'] as $v) {
+            $this->userlist[$v]['ready'] = false;
+        }
+        $this->sendMessage($m,$group);
     }
    
-    public function sendMessage($m){
+    public function sendMessage($m,$id){
         $message = __json_encode($m);
-        foreach ($this->server->connections as $fd) {
-            $this->server->push($fd,$message);
+        if(gettype($id) != "integer"){
+            foreach ($this->server->connections as $fd) {
+                $this->server->push($fd,$message);
+            }
+        }else{
+            foreach ($this->server->connections as $fd) {
+                var_dump($id);
+                echo "-------------------------";
+                if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
+                    echo "我是".$fd;
+                    $this->server->push($fd,$message);
+                }
+            }
         }
+        
+        
     }
     /*大小对比***********
     *prep:上一手牌
@@ -245,13 +372,16 @@ class Poker {
     *       'type' = 'single'
     *   ]
     */
-    public function dataHandle($prep,$curr){
+    public function dataHandle($rule,$prep,$curr){
         $bool = false;
-        if($prep['type'] == $currp['type']){
-            if($prep['data']['level'] < $currp['data']['level']){
+        if($prep['type'] == $curr['type']){
+            if($prep['data'][0]['level'] < $curr['data'][0]['level']){
                 $bool = true;
             }
-        }else if($this->rule[$prep['type']]['level'] < $this->rule[$currp['type']]['level']){
+        }else if($rule[$prep['type']]['level'] < $rule[$curr['type']]['level'])
+        {   
+
+
             $bool = true;
         }
         return $bool;
@@ -263,25 +393,37 @@ class Poker {
     *id,用户id
     *data:data
     */
-    public function delCard($id,$data){
+    public function delCard($id,$data,$group){
+        $currgroup = &$this->group[$group];
         $card = &$this->userlist[$id]['card'];
+        $arr = &$currgroup['card'][0][$currgroup['start']]['card'];
         foreach($data as $v){
             $offset = array_search($v,$card);
-            array_splice($card,$offset,1);
+            array_splice($card,$offset,1);            
+            $ofset = array_search($v,$arr);
+            array_splice($arr,$ofset,1);
         }
+    }
+    public function resetGroup($id){
+        $currgroup = &$this->group[$id];
+        unset($currgroup['card']);
+        unset($currgroup['start']);
+        unset($currgroup['lander']);
+        unset($currgroup['call']);
+        unset($currgroup['prep']);
     }
     //牌型去重
     public function repeat($data){
         $list = [];
         $arr = [];
         foreach($data as $item){
-            $key = $arr.indexOf($item['level']);
-            if($key == -1){
+            $key = array_search($item['level'],$arr);
+            if(gettype($key)!="integer"){
                 $obj = [];
                 $obj['level']=$item['level'];
                 $obj['num']=1;              
                 array_push($arr,$item['level']);
-                array_push($list,push($obj));
+                array_push($list,$obj);
             }else{
                 $list[$key]['num']++;
             }
@@ -299,9 +441,6 @@ class Poker {
         if(count($arr)==0){
             return false;
         }
-        echo "-----------------------";
-        echo $list;
-        echo "-----------------------";
         switch($arr[0]['num']){
             case 1:
                 if(count($list) == 1){
@@ -309,7 +448,7 @@ class Poker {
                     $current['level'] = $arr[0]['level'];
                     $current['other'] = '';
                     break;
-                }else if(array_search($isKing,$list[0]['level']) != -1 && array_search($isKing,$list[0]['level']) != -1 &&  count($list) == 2){
+                }else if(gettype(array_search($list[0]['level'],$isKing)) =="integer"  && gettype(array_search($list[0]['level'],$isKing)) == "integer" &&  count($list) == 2){
                     $current['type'] = 'kingtwo';
                     break;
                 }else if(count($list) > 4 ){
@@ -437,21 +576,22 @@ class Poker {
         array_push($list,$data[0]);
         for($i=0;$i<count($data)-1;$i++){
             if($data[$i]['level']-$data[$i+1]['level']==1){
-                array_push($list,$data[i+1]);
+                array_push($list,$data[$i+1]);
             }else{
                 return $list;
             }
         }
+        return $list;
     }
     /*发牌，初始化组数据*********** 
     *n:组ID
     */
     public function randCard($group_number){
         $list = shuffle($this->numpoker);
-        $currGroup = $this->group[$group_number]['user'];
-        $this->userlist[$currGroup[0]]['card']=[];
-        $this->userlist[$currGroup[1]]['card']=[];
-        $this->userlist[$currGroup[2]]['card']=[];
+        $currgroup = $this->group[$group_number]['user'];
+        $this->userlist[$currgroup[0]]['card']=[];
+        $this->userlist[$currgroup[1]]['card']=[];
+        $this->userlist[$currgroup[2]]['card']=[];
         $endhand = [];
         for($i=0;$i<54;$i++){
             if($i>50){
@@ -459,13 +599,13 @@ class Poker {
                 continue;
             }
             $k = floor(($i)/17);
-            array_push($this->userlist[$currGroup[$k]]['card'],$i);
+            array_push($this->userlist[$currgroup[$k]]['card'],$i);
         }
         $user = [];
         $card = [];
-        array_push($user,$this->userlist[$currGroup[0]]);
-        array_push($user,$this->userlist[$currGroup[1]]);
-        array_push($user,$this->userlist[$currGroup[2]]);
+        array_push($user,$this->userlist[$currgroup[0]]);
+        array_push($user,$this->userlist[$currgroup[1]]);
+        array_push($user,$this->userlist[$currgroup[2]]);
         array_push($card,$user);
         array_push($card,$endhand);
         return $card;
