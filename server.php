@@ -1,8 +1,8 @@
 
 <?php
 define('CFG', include_once('config.php'));
-include_once('./json.php');
-
+// include_once('./json.php');
+include_once('./sort.php');
 class Poker {
     public $server;
     public $cfg;
@@ -344,7 +344,7 @@ class Poker {
     }
    
     public function sendMessage($m,$id){
-        $message = __json_encode($m);
+        $message = json_encode($m);
         if(gettype($id) != "integer"){
             foreach ($this->server->connections as $fd) {
                 $this->server->push($fd,$message);

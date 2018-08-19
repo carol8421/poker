@@ -1,14 +1,14 @@
 <?php 
-function __json_encode( $data ) {
+function json_encode( $data ) {
     if( is_array($data) || is_object($data) ) {
         $islist = is_array($data) && ( empty($data) || array_keys($data) === range(0,count($data)-1) );
 
         if( $islist ) {
-            $json = '[' . implode(',', array_map('__json_encode', $data) ) . ']';
+            $json = '[' . implode(',', array_map('json_encode', $data) ) . ']';
         } else {
             $items = Array();
             foreach( $data as $key => $value ) {
-                $items[] = __json_encode("$key") . ':' . __json_encode($value);
+                $items[] = json_encode("$key") . ':' . json_encode($value);
             }
             $json = '{' . implode(',', $items) . '}';
         }
@@ -82,38 +82,5 @@ function  json_decode($json)
     eval($out . ';');
     return $x;
 } 
-function array_sort($array, $on, $order=SORT_ASC)
-{
-    $new_array = array();
-    $sortable_array = array();
 
-    if (count($array) > 0) {
-        foreach ($array as $k => $v) {
-            if (is_array($v)) {
-                foreach ($v as $k2 => $v2) {
-                    if ($k2 == $on) {
-                        $sortable_array[$k] = $v2;
-                    }
-                }
-            } else {
-                $sortable_array[$k] = $v;
-            }
-        }
-
-        switch ($order) {
-            case SORT_ASC:
-                asort($sortable_array);
-            break;
-            case SORT_DESC:
-                arsort($sortable_array);
-            break;
-        }
-
-        foreach ($sortable_array as $k => $v) {
-            $new_array[$k] = $array[$k];
-        }
-    }
-
-    return $new_array;
-}
  ?>
