@@ -139,7 +139,7 @@
     let isResource = false;//判断background是否有资源
     currName = prompt('请输入用户名', 'user'+Math.floor(Math.random() * 100000));
     if ('WebSocket' in window) {
-        ws = new WebSocket("ws://127.0.0.1:10000/");
+        ws = new WebSocket("ws://39.108.120.57:10004/");
     } else {
         alert('当前浏览器不支持websocket')
     }
