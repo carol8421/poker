@@ -11,7 +11,7 @@ class Poker {
     public $userlist = [];
     public $group = [['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]]];
     public function __construct() {
-        $this->server = new swoole_websocket_server('0.0.0.0', 10000);
+        $this->server = new swoole_websocket_server('0.0.0.0', 10005);
         $this->cfg = CFG;
         $this->numpoker = CFG['card'];
         $this->rule = CFG['rule'];
