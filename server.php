@@ -1,7 +1,7 @@
 
 <?php
 define('CFG', include_once('config.php'));
-include_once('./json.php');
+// include_once('./json.php');
 include_once('./sort.php');
 class Poker {
     public $server;
