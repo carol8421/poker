@@ -139,7 +139,7 @@
     let isResource = false;//判断background是否有资源
     currName = prompt('请输入用户名', 'user'+Math.floor(Math.random() * 100000));
     if ('WebSocket' in window) {
-        ws = new WebSocket("ws://39.108.120.57:10004/");
+        ws = new WebSocket("ws://127.0.0.1:10000/");
     } else {
         alert('当前浏览器不支持websocket')
     }
@@ -283,8 +283,10 @@
                 if(msg.currgroup.lander == currNum){
                     opera.resetBtn(msg.operation);
                 }
-                if(msg.nocall != 2 ){
+                if(msg.opera != 2 ){
                     opera.playVideo("qiang1");
+                }else{
+                    opera.playVideo("pass4");
                 }
                 break;
             case "end":break;

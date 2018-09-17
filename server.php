@@ -1,7 +1,7 @@
 
 <?php
 define('CFG', include_once('config.php'));
-// include_once('./json.php');
+include_once('./json.php');
 include_once('./sort.php');
 class Poker {
     public $server;
@@ -264,8 +264,6 @@ class Poker {
 
                 var_dump($currgroup);
                 $currgroup['call']++;
-
-                print_r($currgroup);
                 
                 if($data['opera']!=2){
                     $currgroup['lander'] = $data['value'];
@@ -286,6 +284,8 @@ class Poker {
                     $currgroup['start'] = $currgroup['lander'];
                     //三轮地主抢完，确认地主人选
                     $m['type'] = 'start';
+                    echo $data['opera'];
+                    echo $currgroup['nocall'];
                     $m['nocall'] = $currgroup['nocall'];
                     //出牌和提示
                     $m['operation'] = [7,8];
@@ -587,19 +587,20 @@ class Poker {
     *n:组ID
     */
     public function randCard($group_number){
-        $list = shuffle($this->numpoker);
+        $arr = range(0,53);
+        $list = shuffle($arr);
         $currgroup = $this->group[$group_number]['user'];
         $this->userlist[$currgroup[0]]['card']=[];
         $this->userlist[$currgroup[1]]['card']=[];
         $this->userlist[$currgroup[2]]['card']=[];
         $endhand = [];
-        for($i=0;$i<54;$i++){
+        for($i=0;$i<count($arr);$i++){
             if($i>50){
-                array_push($endhand,$i);
+                array_push($endhand,$arr[$i]);
                 continue;
             }
             $k = floor(($i)/17);
-            array_push($this->userlist[$currgroup[$k]]['card'],$i);
+            array_push($this->userlist[$currgroup[$k]]['card'],$arr[$i]);
         }
         $user = [];
         $card = [];
@@ -608,6 +609,7 @@ class Poker {
         array_push($user,$this->userlist[$currgroup[2]]);
         array_push($card,$user);
         array_push($card,$endhand);
+        var_dump($card);
         return $card;
 
 
