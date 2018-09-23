@@ -535,9 +535,19 @@
         dom.html(val);
         setTimeout(function(){dom.html("")},2000);
     },
+    levelSort(list){
+        let obj = (check.repeat(list)).sort(check.sortKey);
+        let key = "";
+        list.forEach((v,i)=>{
+            if(v.level == obj[0].level ){
+                key = v.value;
+            }
+        })
+        return key;
+    },
     playMusic(group){
         var val = "";
-        var key = group.prep.data[0].value;
+        var key = opera.levelSort(group.prep.data);
         switch(group.prep.type){
             case "one":
                 val = key;
@@ -549,7 +559,7 @@
                 val = "连对";
                 break;
             case "three":
-                if(data.other){
+                if(group.prep.other){
                     val = "三带一";
                 }else{                    
                     val = "三个"+key;
@@ -574,7 +584,7 @@
 
         var index = Math.floor(Math.random()*3);
         var crush = ['crush','crush1','crush2'];
-        if(group.time != 0){
+        if(group.time != 0 && group.prep.type != "four" && group.prep.type != "kingtwo"){
             val = crush[index];
         }
         opera.playVideo(val);

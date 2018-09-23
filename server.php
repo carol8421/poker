@@ -12,6 +12,7 @@ class Poker {
     public $group = [['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]],['user'=>[]]];
     public function __construct() {
         $this->server = new swoole_websocket_server('0.0.0.0', 10005);
+        // $this->server = new swoole_websocket_server('127.0.0.1', 10000);
         $this->cfg = CFG;
         $this->numpoker = CFG['card'];
         $this->rule = CFG['rule'];
@@ -270,7 +271,7 @@ class Poker {
                 }else{
                     $currgroup['nocall']++;
                 }
-                if($currgroup['call'] <= 3 && $currgroup['nocall'] <2 ){
+                if($currgroup['call'] <= 3 && !($currgroup['nocall'] == 2 &&  $currgroup['call'] == 3) ){
                     //判断是否为不叫
 
                     $m['operation'] = [1,2];
@@ -529,7 +530,7 @@ class Poker {
                     foreach($arr as $k=>$v){
                         $val += $v['num'];
                     }
-                    $onenum = $val-$count($fourArr)*4;;
+                    $onenum = $val-count($fourArr)*4;;
                     if($onenum==0 && count($fourArr) > 1){
                         $current['type'] = 'fourmore';
                         break;
