@@ -196,7 +196,7 @@ class Poker {
                     
                     logs('数据'.json_encode($data));
                     logs('所有数据'.json_encode($currgroup));
-                    logs('用户列表'.json_encode($userlist));
+                    logs('用户列表'.json_encode($this->userlist));
                     if(count($currgroup) < 3){
                         logs('正常执行所有操作,进入房间');
                         array_push($this->group[$data['group']]['user'],$frame->fd);
@@ -313,7 +313,8 @@ class Poker {
 
         }
         $groupid = isset($data['group'])?$data['group']:false;
-        logs('最后操作除了问题'.$groupId);
+        logs('最后操作除了问题'.$groupid);
+        logs('记录fd'.$frame->fd);
         $this->sendMessage($m,$groupid);
     }
     public function onOpen($server, $request){
@@ -357,16 +358,25 @@ class Poker {
    
     public function sendMessage($m,$id){
         $message = json_encode($m);
+        
+        logs('问题'.$message);
         if(gettype($id) != "integer"){
+            
+            logs('路线:world'.$this->server->connections);
             foreach ($this->server->connections as $fd) {
+                logs('最后一步:'.$fd.'----------------'.$messagbe);
                 $this->server->push($fd,$message);
             }
         }else{
+            logs('路线:enterRoom'.$this->server->connectionssage);
             foreach ($this->server->connections as $fd) {
                 var_dump($id);
                 echo "-------------------------";
+                logs('all数据',json_encode($this->group[$id]));
                 if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
                     echo "我是".$fd;
+                    logs('角色'.$fd);
+                    logs('最后一步:'.$fd.'----------------'.$messagbe);
                     $this->server->push($fd,$message);
                 }
             }
@@ -514,9 +524,6 @@ class Poker {
                             break;
                         }else if($onenum == 1 && count($threeArr) == 1){
                             $current['type'] = 'three';
-				echo "-------------------------";
-				var_dump($arr);				
-				echo "-------------------------";
                             $current['level'] = $arr[0]['level'];
                             $current['other'] = 1;
                             break;
