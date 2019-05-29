@@ -33,4 +33,10 @@ function array_sort($array, $on, $order=SORT_ASC)
 
     return $new_array;
 }
- ?>
+function logs($msg){
+    $file = date('Y-m-d', time()).'.txt';
+    $time =  date('Y-m-d h:i:s', time());
+    file_put_contents($file,$time.' '.$msg.'\n');
+    file_put_contents($file,$time.' '.'--------------------------------------------------------------------\n');
+}
+?>

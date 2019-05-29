@@ -357,6 +357,7 @@
             data.type = "enter";
             data.name = currName;
             data.group = index;
+            console.log(data);
             ws.send(JSON.stringify(data));
         },
         sendNotice:function(str){

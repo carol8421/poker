@@ -57,13 +57,17 @@ class Poker {
    */
     public function onMessage($server, $frame){
         //type::login,message,loginout,call,enter
+        
+        logs('单纯的没有进来');
         $data = json_decode($frame->data,true);
         //回复消息的数组message
+        logs('收到数据',$data);
         $m = [];
         $m['name'] = $data['name'];
         $m['type'] = $data['type'];
         $m['group'] = isset($data['group'])?$data['group']:"";
         $id = $this->getId($data['name']);
+        logs('$id报错');
         switch($data['type']){
             case 'login':
                     $list = array_column($this->userlist, 'name');
@@ -185,14 +189,20 @@ class Poker {
                             $m['type'] = 'error';
                         }
                     }
+                    logs('enter房间');
+                    
                     $currgroup = $this->group[$data['group']]['user'];
                     $this->userlist[$frame->fd]['group'] = $data['group'];
-                    var_dump($this->group);
-                    var_dump($currgroup);
+                    
+                    logs('数据'.json_encode($data));
+                    logs('所有数据'.json_encode($currgroup));
+                    logs('用户列表'.json_encode($userlist));
                     if(count($currgroup) < 3){
+                        logs('正常执行所有操作,进入房间');
                         array_push($this->group[$data['group']]['user'],$frame->fd);
                         $m['group'] = $data['group']; $m['message'] = $data['name']."进入房间";
                     }else{
+                        logs('正常执行所有操作,满员');
                         $m['message'] = '该房间已经满员,请重新选择房间';
                         $m['type'] = 'error';
                     }
@@ -303,6 +313,7 @@ class Poker {
 
         }
         $groupid = isset($data['group'])?$data['group']:false;
+        logs('最后操作除了问题'.$groupId);
         $this->sendMessage($m,$groupid);
     }
     public function onOpen($server, $request){
