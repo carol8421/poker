@@ -503,7 +503,10 @@ class Poker {
                             break;
                         }else if($onenum == 1 && count($threeArr) == 1){
                             $current['type'] = 'three';
-                            $current['level'] = arr[0]['level'];
+				echo "-------------------------";
+				var_dump($arr);				
+				echo "-------------------------";
+                            $current['level'] = $arr[0]['level'];
                             $current['other'] = 1;
                             break;
                         }else if($onenum == count($threeArr)){
