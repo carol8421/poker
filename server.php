@@ -61,7 +61,7 @@ class Poker {
         logs('单纯的没有进来');
         $data = json_decode($frame->data,true);
         //回复消息的数组message
-        logs('收到数据',$data);
+        logs('收到数据'.$data);
         $m = [];
         $m['name'] = $data['name'];
         $m['type'] = $data['type'];
@@ -362,17 +362,17 @@ class Poker {
         logs('问题'.$message);
         if(gettype($id) != "integer"){
             
-            logs('路线:world'.$this->server->connections);
+            logs('路线:world'.json_encode($this->server->connections));
             foreach ($this->server->connections as $fd) {
                 logs('最后一步:'.$fd.'----------------'.$messagbe);
                 $this->server->push($fd,$message);
             }
         }else{
-            logs('路线:enterRoom'.$this->server->connectionssage);
+            logs('路线:enterRoom'.json_encode($this->server->connections));
             foreach ($this->server->connections as $fd) {
                 var_dump($id);
                 echo "-------------------------";
-                logs('all数据',json_encode($this->group[$id]));
+                logs('all数据'.json_encode($this->group[$id]));
                 if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
                     echo "我是".$fd;
                     logs('角色'.$fd);
