@@ -362,13 +362,13 @@ class Poker {
         logs('问题'.$message);
         if(gettype($id) != "integer"){
             
-            logs('路线:world'.json_encode($this->server->connections));
+            logs('路线:world'.implode(",",$this->server->connections));
             foreach ($this->server->connections as $fd) {
                 logs('最后一步:'.$fd.'----------------'.$messagbe);
                 $this->server->push($fd,$message);
             }
         }else{
-            logs('路线:enterRoom'.json_encode($this->server->connections));
+            logs('路线:enterRoom'.implode(",",$this->server->connections));
             foreach ($this->server->connections as $fd) {
                 var_dump($id);
                 echo "-------------------------";
