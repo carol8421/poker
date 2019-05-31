@@ -368,7 +368,7 @@ class Poker {
                 $this->server->push($fd,$message);
             }
         }else{
-            logs('路线:enterRoom'.implode(",",$this->server->connections));
+            logs('路线:enterRoom,所有连接人'.implode(",",$this->server->connections));
             foreach ($this->server->connections as $fd) {
                 var_dump($id);
                 echo "-------------------------";
@@ -455,6 +455,7 @@ class Poker {
     //牌型确认
     public function isTrueCard ($data){
         //从小到大排序,数组反转
+        logs('这牌'.json_encode($data));
         $list = $data;
         $arr = array_sort($this->repeat($list),'num',SORT_DESC);
         $current =[];
@@ -463,6 +464,7 @@ class Poker {
         if(count($arr)==0){
             return false;
         }
+        logs('当前牌型,'.json_encode($arr));
         switch($arr[0]['num']){
             case 1:
                 if(count($list) == 1){
