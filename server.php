@@ -235,7 +235,6 @@ class Poker {
                         $m['card'] = $this->randCard($groupId);
                         $m['group'] = $groupId;
                         $m['operation'] = [0,2];
-                        print_r($m);
                         //初始化当前牌局
                         $this->group[$groupId]['card'] = $m['card'];
                         $this->group[$groupId]['start'] = rand(0,2);
@@ -369,10 +368,11 @@ class Poker {
             }
         }else{
             logs('路线:enterRoom,所有连接人'.implode(",",$this->server->connections));
+            logs('all数据'.json_encode($this->group[$id]));
+            logs('alluser'.json_encode($this->group[$id]['user']));
             foreach ($this->server->connections as $fd) {
                 var_dump($id);
                 echo "-------------------------";
-                logs('all数据'.json_encode($this->group[$id]));
                 if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
                     echo "我是".$fd;
                     logs('角色'.$fd);
