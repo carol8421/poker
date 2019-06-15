@@ -371,15 +371,19 @@ class Poker {
             logs('all数据'.json_encode($this->group[$id]));
             logs('alluser'.json_encode($this->group[$id]['user']));
             foreach ($this->server->connections as $fd) {
-                var_dump($id);
-                echo "-------------------------";
-                if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
-                    echo "我是".$fd;
-                    logs('角色'.$fd);
-                    logs('最后一步:'.$fd.'----------------'.$messagbe);
-                    $this->server->push($fd,$message);
-                }
+                logs('最后一步:'.$fd.'----------------'.$messagbe);
+                $this->server->push($fd,$message);
             }
+            // foreach ($this->server->connections as $fd) {
+            //     var_dump($id);
+            //     echo "-------------------------";
+            //     if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
+            //         echo "我是".$fd;
+            //         logs('角色'.$fd);
+            //         logs('最后一步:'.$fd.'----------------'.$messagbe);
+            //         $this->server->push($fd,$message);
+            //     }
+            // }
         }
         
         
