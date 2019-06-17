@@ -371,7 +371,7 @@ class Poker {
             logs('all数据'.json_encode($this->group[$id]));
             logs('alluser'.json_encode($this->group[$id]['user']));
             foreach ($this->server->connections as $fd) {
-                logs(array_search($fd,$this->group[$id]['user']);
+                logs(array_search($fd,$this->group[$id]['user']));
                 logs(gettype(array_search($fd,$this->group[$id]['user']));
                 if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
                     logs('最后一步:'.$fd.'----------------'.$messagbe);
