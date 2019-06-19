@@ -57,17 +57,13 @@ class Poker {
    */
     public function onMessage($server, $frame){
         //type::login,message,loginout,call,enter
-        
-        logs('单纯的没有进来');
         $data = json_decode($frame->data,true);
         //回复消息的数组message
-        logs('收到数据'.$data);
         $m = [];
         $m['name'] = $data['name'];
         $m['type'] = $data['type'];
         $m['group'] = isset($data['group'])?$data['group']:"";
         $id = $this->getId($data['name']);
-        logs('$id报错');
         switch($data['type']){
             case 'login':
                     $list = array_column($this->userlist, 'name');
@@ -189,20 +185,13 @@ class Poker {
                             $m['type'] = 'error';
                         }
                     }
-                    logs('enter房间');
                     
                     $currgroup = $this->group[$data['group']]['user'];
                     $this->userlist[$frame->fd]['group'] = $data['group'];
-                    
-                    logs('数据'.json_encode($data));
-                    logs('所有数据'.json_encode($currgroup));
-                    logs('用户列表'.json_encode($this->userlist));
                     if(count($currgroup) < 3){
-                        logs('正常执行所有操作,进入房间');
                         array_push($this->group[$data['group']]['user'],$frame->fd);
                         $m['group'] = $data['group']; $m['message'] = $data['name']."进入房间";
                     }else{
-                        logs('正常执行所有操作,满员');
                         $m['message'] = '该房间已经满员,请重新选择房间';
                         $m['type'] = 'error';
                     }
@@ -312,7 +301,7 @@ class Poker {
 
         }
         $groupid = isset($data['group'])?$data['group']:false;
-        logs('最后操作除了问题'.$groupid);
+        logs('用户组'.$groupid);
         logs('记录fd'.$frame->fd);
         $this->sendMessage($m,$groupid);
     }
@@ -357,24 +346,13 @@ class Poker {
    
     public function sendMessage($m,$id){
         $message = json_encode($m);
-        
-        logs('问题'.$message);
         if(gettype($id) != "integer"){
-            
-            logs('路线:world'.implode(",",$this->server->connections));
             foreach ($this->server->connections as $fd) {
-                logs('最后一步:'.$fd.'----------------'.$messagbe);
                 $this->server->push($fd,$message);
             }
         }else{
-            logs('路线:enterRoom,所有连接人'.implode(",",$this->server->connections));
-            logs('all数据'.json_encode($this->group[$id]));
-            logs('alluser'.json_encode($this->group[$id]['user']));
             foreach ($this->server->connections as $fd) {
-                logs(array_search($fd,$this->group[$id]['user']));
-                logs(gettype(array_search($fd,$this->group[$id]['user'])));
                 if(gettype(array_search($fd,$this->group[$id]['user'])) == "integer"){
-                    logs('最后一步:'.$fd.'----------------'.$messagbe);
                     $this->server->push($fd,$message);
                 }
             }
@@ -453,7 +431,6 @@ class Poker {
     //牌型确认
     public function isTrueCard ($data){
         //从小到大排序,数组反转
-        logs('这牌'.json_encode($data));
         $list = $data;
         $arr = array_sort($this->repeat($list),'num',SORT_DESC);
         $current =[];
@@ -462,7 +439,6 @@ class Poker {
         if(count($arr)==0){
             return false;
         }
-        logs('当前牌型,'.json_encode($arr));
         switch($arr[0]['num']){
             case 1:
                 if(count($list) == 1){
