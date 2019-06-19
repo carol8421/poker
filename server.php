@@ -289,9 +289,11 @@ class Poker {
                     //出牌和提示
                     $m['operation'] = [7,8];
                     $arr = array_merge($currgroup['card'][0][$currgroup['lander']]['card'],$currgroup['card'][1]);
-                    if($this->group[$data['group']]['user'][$currgroup['lander']] == $frame->fd){
-                        $this->userlist[$frame->fd]['card'] = $arr;
-                    }
+                    // if($this->group[$data['group']]['user'][$currgroup['lander']] == $frame->fd){
+                    //     $this->userlist[$frame->fd]['card'] = $arr;
+                    // }
+                    $index = $this->group[$data['group']]['user'][$currgroup['lander']];
+                    $this->userlist[$index]['card'] = $arr;
                     $this->group[$data['group']]['card'][0][$currgroup['lander']]['card'] = $arr;
                     
                 }
